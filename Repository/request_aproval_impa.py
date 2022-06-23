@@ -8,18 +8,19 @@ from Models.request import Request
 
 class RequestAprovalRepoImpla(RequestApprovalRepo):
 
-    def get_all_requests(self, approver):
-            sql = "SELECT * FROM request"
-            # crates cursor
-            cursor = connection.cursor()
-            # executes command
-            cursor.execute(sql)
-            records = cursor.fetchall()
-            request_list = [build_request(record) for record in records]
-            if request_list:
-                return request_list
-            else:
-                raise ResourceNotFound(f"no requests found")
+    def get_all_requests(self):
+         # Filter this so that only relevent reuqest are displayed.
+        sql = "SELECT * FROM request"
+        # creates cursor
+        cursor = connection.cursor()
+        # executes command
+        cursor.execute(sql)
+        records = cursor.fetchall()
+        request_list = [build_request(record) for record in records]
+        if request_list:
+            return request_list
+        else:
+            raise ResourceNotFound(f"no requests found")
 
     def approved(self, requestid, approver):
         sql = "select * from request where requestid = %s"
@@ -73,6 +74,33 @@ class RequestAprovalRepoImpla(RequestApprovalRepo):
             return build_request(record)
         else:
             raise ResourceNotFound(f"request with request id. {change['requestid']} does not exist")
+
+    def department_check(self, employeeID, departmentID):
+        check = False
+        sql = "SELECT * FROM employees where employee_id = %s"
+        cursor = connection.cursor()
+        # executes command
+        cursor.execute(sql, [employeeID])
+        employee = cursor.fetchone()
+        if employee:
+            x = build_employee(employee)
+            if x.departmentid == departmentID:
+                check = True
+        return check
+
+    def supervisor_check(self, employeeID, remployeeID):
+        # I with the remployeeid from the request I will check if the supervicer = employeeid
+        check = False
+        sql = "SELECT * FROM employees where employee_id = %s"
+        cursor = connection.cursor()
+        # executes command
+        cursor.execute(sql, [remployeeID])
+        employee = cursor.fetchone()
+        if employee:
+            x = build_employee(employee)
+            if x.superviser_code == employeeID:
+                check = True
+        return check
 
     def close_request(self, requestid):
         sql = "select requestid from request where requestid = %s"

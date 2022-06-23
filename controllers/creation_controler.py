@@ -42,16 +42,17 @@ def route(app):
             return e, 400
         return temp.json(), 201
 
-    @app.route("/employee/<employeeid>/request/<requestid>", methods=["PUT"])
+    @app.route("/employee/<employeeid>/request/<requestid>", methods=["Patch"])
     def update_request(employeeid, requestid):
         body = request.json
+        update = body["update"]
         temp = Request(requestid=int(requestid), employee_id=int(employeeid), event_type=body["eventType"],
                        event_date=body["eventDate"], event_time=body["eventTime"], event_location=body["eventLocation"],
                        event_cost=body["eventCost"], event_reimbersment=body["eventReimbersment"],
                        evemt_grading_type=body["eventGradingType"], employee_grade=body["employeeGrade"],
                        request_status=body["requestStatus"], event_description=body["eventDescription"],)
         try:
-            return jsonify(rs.update_request(temp).json())
+            return jsonify(rs.update_request(temp, update).json())
         except ResourceNotFound as r:
             return r.message, 404
 

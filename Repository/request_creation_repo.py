@@ -19,7 +19,7 @@ class RequestCreationRepo(ABC):
         pass
 
     @abstractmethod
-    def update_request(self, change):
+    def update_request(self, change, update):
         # update information about request.
         pass
 

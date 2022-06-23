@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 class RequestApprovalRepo(ABC):
     @abstractmethod
-    def get_all_requests(self,aprover):
+    def get_all_requests(self,):
         # Method that gets employee details.
         pass
 

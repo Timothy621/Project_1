@@ -75,32 +75,61 @@ class RequestCreationRepoImpl(RequestCreationRepo):
         else:
             raise ResourceNotFound(f"request {requestid} - not found")
 
-    def update_request(self, change):
+    def update_request(self, change, update):
+        # Update this function To make it so that you do not need all the Info to update.
+        # Update Event Time/Date
+        # Update Event Location
+        # Update Submit Grade
+
         sql = "select * from request where requestid = %s"
         cursor = connection.cursor()
         cursor.execute(sql, [change.requestid])
         testid = cursor.fetchone()
         print(testid)
         if testid:
-            M = get_event_type(change.event_type)
-            M = M[0]
-            print(M)
-            change.event_cost = int(change.event_cost)
-            change.event_reimbersment = change.event_cost * M
-            change.request_status = testid[6]
-            sql = "UPDATE request Set  event_type=%s, event_cost=%s," \
-                  " employee_grade=%s, event_reimbersment=%s, " \
-                  "event_date=%s, event_time=%s, event_location=%s, event_description=%s, " \
-                  "evemt_grading_type=%s where requestid = %s Returning *"
-            cursor = connection.cursor()
-            cursor.execute(sql, [change.event_type, change.event_cost,
-                                 change.employee_grade, change.event_reimbersment,
-                                 change.event_date, change.event_time, change.event_location,
-                                 change.event_description, change.event_grading_type, change.requestid
-                                 ])
-            connection.commit()
-            record = cursor.fetchone()
-            return build_request(record)
+            if update == "Time/Date":
+                print(f'updating + {update}')
+                sql = "UPDATE request Set event_date=%s, event_time=%s where requestid = %s Returning *"
+                cursor = connection.cursor()
+                cursor.execute(sql, [change.event_date, change.event_time, change.requestid])
+                connection.commit()
+                record = cursor.fetchone()
+                return build_request(record)
+            elif update == "Location":
+                print(f'updating + {update}')
+                sql = "UPDATE request Set event_location=%s where requestid = %s Returning *"
+                cursor = connection.cursor()
+                cursor.execute(sql, [change.event_location, change.requestid])
+                connection.commit()
+                record = cursor.fetchone()
+                return build_request(record)
+            elif update == "Grade":
+                print(f'updating + {update}')
+                sql = "UPDATE request Set  employee_grade=%s where requestid = %s Returning *"
+                cursor = connection.cursor()
+                cursor.execute(sql, [change.employee_grade, change.requestid])
+                connection.commit()
+                record = cursor.fetchone()
+                return build_request(record)
+        #     M = get_event_type(change.event_type)
+        #     M = M[0]
+        #     print(M)
+        #     change.event_cost = int(change.event_cost)
+        #     change.event_reimbersment = change.event_cost * M
+        #     change.request_status = testid[6]
+        #     sql = "UPDATE request Set  event_type=%s, event_cost=%s," \
+        #           " employee_grade=%s, event_reimbersment=%s, " \
+        #           "event_date=%s, event_time=%s, event_location=%s, event_description=%s, " \
+        #           "evemt_grading_type=%s where requestid = %s Returning *"
+        #     cursor = connection.cursor()
+        #     cursor.execute(sql, [change.event_type, change.event_cost,
+        #                          change.employee_grade, change.event_reimbersment,
+        #                          change.event_date, change.event_time, change.event_location,
+        #                          change.event_description, change.event_grading_type, change.requestid
+        #                          ])
+        #     connection.commit()
+        #     record = cursor.fetchone()
+        #     return build_request(record)
         else:
             raise ResourceNotFound(f"request with request id. {change.requestid} does not exist")
 
@@ -133,22 +162,3 @@ class RequestCreationRepoImpl(RequestCreationRepo):
             raise ResourceNotFound(f"request {requestid} does not exist")
 
 
-def test():
-    rcrp = RequestCreationRepoImpl()
-    R = Request(requestid=1, employee_id=237, event_type="o", event_cost=1000, event_reimbersment=0,
-                employee_grade="B", request_status="Pending Super",
-                event_date="2/13/22", event_time="6:00pm", event_location='Test location',
-                event_description="this is to test if this request will work.", evemt_grading_type="Letter Grade"
-                )
-    R = rcrp.create_request(R)
-    print(rcrp.get_employee_request(R.employee_id))
-    R.event_cost = 2000
-    R.event_type = "s"
-    R = rcrp.update_request(R)
-    print(rcrp.get_employee_request(R.employee_id))
-    print(rcrp.get_request_by_requestid(R.requestid))
-    print(rcrp.close_request(R.requestid))
-
-
-if __name__ == '__main__':
-    test()
